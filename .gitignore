@@ -1,0 +1,15 @@
+# Python:
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+dist
+build
+
+# Project
+BigGAN-PyTorch/__pycache__/
+BigGAN-PyTorch/data/
+BigGAN-PyTorch/logs/
+BigGAN-PyTorch/samples/
+BigGAN-PyTorch/weights/
+BigGAN-PyTorch/*.npz
