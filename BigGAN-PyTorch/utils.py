@@ -226,7 +226,7 @@ def prepare_parser():
     '--num_best_copies', type=int, default=2,
     help='How many previous best checkpoints to save (default: %(default)s)')
   parser.add_argument(
-    '--which_best', type=str, default='IS',
+    '--which_best', type=str, default='FID',
     help='Which metric to use to determine when to save new "best"'
          'checkpoints, one of IS or FID (default: %(default)s)')
   parser.add_argument(
@@ -421,28 +421,28 @@ dset_dict = {'I32': dset.ImageFolder, 'I64': dset.ImageFolder,
              'I32_hdf5': dset.ILSVRC_HDF5, 'I64_hdf5': dset.ILSVRC_HDF5, 
              'I128_hdf5': dset.ILSVRC_HDF5, 'I256_hdf5': dset.ILSVRC_HDF5,
              'C10': dset.CIFAR10, 'C100': dset.CIFAR100,
-             'TI200': dset.ImageFolder, 'TI200_hdf5': dset.ILSVRC_HDF5,
+             'TI200': dset.ImageFolder, 'TI200_valid': dset.ImageFolder, 
              'D120': dset.ImageFolder, 'D120_hdf5': dset.ILSVRC_HDF5}
 imsize_dict = {'I32': 32, 'I32_hdf5': 32,
                'I64': 64, 'I64_hdf5': 64,
                'I128': 128, 'I128_hdf5': 128,
                'I256': 256, 'I256_hdf5': 256,
                'C10': 32, 'C100': 32,
-               'TI200': 64, 'TI200_hdf5': 64,
+               'TI200': 64, 'TI200_valid': 64,
                'D120': 64, 'D120_hdf5': 64}
 root_dict = {'I32': 'ImageNet', 'I32_hdf5': 'ILSVRC32.hdf5',
              'I64': 'ImageNet', 'I64_hdf5': 'ILSVRC64.hdf5',
              'I128': 'ImageNet', 'I128_hdf5': 'ILSVRC128.hdf5',
              'I256': 'ImageNet', 'I256_hdf5': 'ILSVRC256.hdf5',
              'C10': 'cifar', 'C100': 'cifar',
-             'TI200': 'TinyImageNet', 'TI200_hdf5': 'TinyImageNet',
+             'TI200': 'tiny_imagenet/train', 'TI200_valid': 'tiny_imagenet/valid',
              'D120': 'dogs', 'D120_hdf5': 'dogs'}
 nclass_dict = {'I32': 1000, 'I32_hdf5': 1000,
                'I64': 1000, 'I64_hdf5': 1000,
                'I128': 1000, 'I128_hdf5': 1000,
                'I256': 1000, 'I256_hdf5': 1000,
                'C10': 10, 'C100': 100,
-               'TI200': 200, 'TI200_hdf5': 200,
+               'TI200': 200, 'TI200_valid': 200,
                'D120': 120, 'D120_hdf5': 120}
 # Number of classes to put per sample sheet               
 classes_per_sheet_dict = {'I32': 50, 'I32_hdf5': 50,
@@ -450,7 +450,7 @@ classes_per_sheet_dict = {'I32': 50, 'I32_hdf5': 50,
                           'I128': 20, 'I128_hdf5': 20,
                           'I256': 20, 'I256_hdf5': 20,
                           'C10': 10, 'C100': 100,
-                          'TI200': 100, 'TI200_hdf5': 100,
+                          'TI200': 100, 'TI200_valid': 100,
                           'D120': 60, 'D120_hdf5': 60}
 activation_dict = {'inplace_relu': nn.ReLU(inplace=True),
                    'relu': nn.ReLU(inplace=False),
@@ -1090,12 +1090,16 @@ class Distribution(torch.Tensor):
       self.mean, self.var = kwargs['mean'], kwargs['var']
     elif self.dist_type == 'categorical':
       self.num_categories = kwargs['num_categories']
+      self.label = kwargs['label']
 
   def sample_(self):
     if self.dist_type == 'normal':
       self.normal_(self.mean, self.var)
     elif self.dist_type == 'categorical':
-      self.random_(0, self.num_categories)    
+      if self.label is not None:
+        self.random_(self.label, self.label+1)
+      else:
+        self.random_(0, self.num_categories)    
     # return self.variable
     
   # Silly hack: overwrite the to() method to wrap the new object
@@ -1109,7 +1113,7 @@ class Distribution(torch.Tensor):
 
 # Convenience function to prepare a z and y vector
 def prepare_z_y(G_batch_size, dim_z, nclasses, device='cuda', 
-                fp16=False,z_var=1.0):
+                fp16=False,z_var=1.0, label=None):
   z_ = Distribution(torch.randn(G_batch_size, dim_z, requires_grad=False))
   z_.init_distribution('normal', mean=0, var=z_var)
   z_ = z_.to(device,torch.float16 if fp16 else torch.float32)   
@@ -1118,7 +1122,7 @@ def prepare_z_y(G_batch_size, dim_z, nclasses, device='cuda',
     z_ = z_.half()
 
   y_ = Distribution(torch.zeros(G_batch_size, requires_grad=False))
-  y_.init_distribution('categorical',num_categories=nclasses)
+  y_.init_distribution('categorical',num_categories=nclasses, label=label)
   y_ = y_.to(device, torch.int64)
   return z_, y_
 

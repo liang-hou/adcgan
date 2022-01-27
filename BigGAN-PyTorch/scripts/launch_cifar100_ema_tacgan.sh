@@ -1,7 +1,7 @@
 #!/bin/bash
-CUDA_VISIBLE_DEVICES=0 python train.py \
+python train.py \
 --shuffle --batch_size 50 --parallel \
---num_G_accumulations 1 --num_D_accumulations 1 --num_epochs 500 \
+--num_G_accumulations 1 --num_D_accumulations 1 --num_epochs 1000 \
 --num_D_steps 4 --G_lr 2e-4 --D_lr 2e-4 \
 --dataset C100 \
 --G_ortho 0.0 \
@@ -9,4 +9,4 @@ CUDA_VISIBLE_DEVICES=0 python train.py \
 --G_init N02 --D_init N02 \
 --ema --use_ema --ema_start 1000 \
 --test_every 2000 --save_every 2000 --num_best_copies 1 --num_save_copies 0 --seed 0 \
---loss tacgan --G_lambda 1.0 --D_lambda 1.0 --experiment_name c100_tacgan_n4_b50_e500_ema1k_w1
+--loss tacgan --G_lambda 1.0 --D_lambda 1.0 --experiment_name c100_tacgan_n4_b50_e1000_a1000_w1

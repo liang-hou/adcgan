@@ -271,13 +271,17 @@ def load_inception_net(parallel=False):
 # and iterates until it accumulates config['num_inception_images'] images.
 # The iterator can return samples with a different batch size than used in
 # training, using the setting confg['inception_batchsize']
-def prepare_inception_metrics(dataset, parallel, no_fid=False):
+def prepare_inception_metrics(dataset, parallel, no_fid=False, no_is=False, label=None):
   # Load metrics; this is intentionally not in a try-except loop so that
   # the script will crash here if it cannot find the Inception moments.
   # By default, remove the "hdf5" from dataset
   dataset = dataset.strip('_hdf5')
-  data_mu = np.load(dataset+'_inception_moments.npz')['mu']
-  data_sigma = np.load(dataset+'_inception_moments.npz')['sigma']
+  if type(label) == int:
+    data_mu = np.load(dataset+'_{:03d}_inception_moments.npz'.format(label))['mu']
+    data_sigma = np.load(dataset+'_{:03d}_inception_moments.npz'.format(label))['sigma']
+  else:
+    data_mu = np.load(dataset+'_inception_moments.npz')['mu']
+    data_sigma = np.load(dataset+'_inception_moments.npz')['sigma']
   # Load network
   net = load_inception_net(parallel)
   def get_inception_metrics(sample, num_inception_images, num_splits=10, 
@@ -287,7 +291,10 @@ def prepare_inception_metrics(dataset, parallel, no_fid=False):
     pool, logits, labels = accumulate_inception_activations(sample, net, num_inception_images)
     if prints:  
       print('Calculating Inception Score...')
-    IS_mean, IS_std = calculate_inception_score(logits.cpu().numpy(), num_splits)
+    if no_is:
+      IS_mean, IS_std = 0, 0
+    else:
+      IS_mean, IS_std = calculate_inception_score(logits.cpu().numpy(), num_splits)
     if no_fid:
       FID = 9999.0
     else:
