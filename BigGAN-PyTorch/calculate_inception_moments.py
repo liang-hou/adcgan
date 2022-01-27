@@ -79,12 +79,48 @@ def run(config):
   print('Saving calculated means and covariances to disk...')
   np.savez(config['dataset'].strip('_hdf5')+'_inception_moments.npz', **{'mu' : mu, 'sigma' : sigma})
 
+def run_intra(config):
+  from utils import nclass_dict
+  # Get loader
+  config['drop_last'] = False
+  loaders = utils.get_data_loaders(**config)
+
+  # Load inception net
+  net = inception_utils.load_inception_net(parallel=config['parallel'])
+  pool, logits, labels = [], [], []
+  device = 'cuda'
+  for i, (x, y) in enumerate(tqdm(loaders[0])):
+    x = x.to(device)
+    with torch.no_grad():
+      pool_val, logits_val = net(x)
+      pool += [np.asarray(pool_val.cpu())]
+      logits += [np.asarray(F.softmax(logits_val, 1).cpu())]
+      labels += [np.asarray(y.cpu())]
+
+  pool, logits, labels = [np.concatenate(item, 0) for item in [pool, logits, labels]]
+  # uncomment to save pool, logits, and labels to disk
+  # print('Saving pool, logits, and labels to disk...')
+  # np.savez(config['dataset']+'_inception_activations.npz',
+  #           {'pool': pool, 'logits': logits, 'labels': labels})
+  for cls in range(nclass_dict[config['dataset']]):
+    # Calculate inception metrics and report them
+    print('Calculating {:03d} inception metrics...'.format(cls))
+    IS_mean, IS_std = inception_utils.calculate_inception_score(logits[labels == cls])
+    print('Training data from dataset %s has IS of %5.5f +/- %5.5f' % (config['dataset'], IS_mean, IS_std))
+    # Prepare mu and sigma, save to disk. Remove "hdf5" by default 
+    # (the FID code also knows to strip "hdf5")
+    print('Calculating means and covariances...')
+    mu, sigma = np.mean(pool, axis=0), np.cov(pool, rowvar=False)
+    print('Saving calculated means and covariances to disk...')
+    np.savez(config['dataset'].strip('_hdf5')+'_{:03d}_inception_moments.npz'.format(cls), **{'mu' : mu, 'sigma' : sigma})
+
 def main():
   # parse command line    
   parser = prepare_parser()
   config = vars(parser.parse_args())
   print(config)
   run(config)
+  # run_intra(config)
 
 
 if __name__ == '__main__':    
