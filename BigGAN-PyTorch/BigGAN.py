@@ -354,6 +354,7 @@ class Discriminator(nn.Module):
     self.adc = self.which_linear(self.arch['out_channels'][-1], n_classes * 2)
     self.ac = self.which_linear(self.arch['out_channels'][-1], n_classes)
     self.mi = self.which_linear(self.arch['out_channels'][-1], n_classes)
+    self.am = self.which_linear(self.arch['out_channels'][-1], n_classes + 1)
     # Embedding for projection discrimination
     self.embed = self.which_embedding(self.n_classes, self.arch['out_channels'][-1])
 
@@ -407,10 +408,11 @@ class Discriminator(nn.Module):
     adc = self.adc(h)
     ac = self.ac(h)
     mi = self.mi(h)
+    am = self.am(h)
     # Get projection of final featureset onto class vectors and add to evidence
     if self.projection:
       out = out + torch.sum(self.embed(y) * h, 1, keepdim=True)
-    return out, adc, ac, mi
+    return out, adc, ac, mi, am
 
 # Parallelized G_D to minimize cross-gpu communication
 # Without this, Generator outputs would get all-gathered and then rebroadcast.
@@ -449,11 +451,11 @@ class G_D(nn.Module):
       D_input = torch.cat([G_z, x], 0) if x is not None else G_z
       D_class = torch.cat([gy, dy], 0) if dy is not None else gy
       # Get Discriminator output
-      D_out, D_adc, D_ac, D_mi = self.D(D_input, D_class)
+      D_out, D_adc, D_ac, D_mi, D_am = self.D(D_input, D_class)
       if x is not None:
-        return torch.split(D_out, [G_z.shape[0], x.shape[0]]), torch.split(D_adc, [G_z.shape[0], x.shape[0]]), torch.split(D_ac, [G_z.shape[0], x.shape[0]]), torch.split(D_mi, [G_z.shape[0], x.shape[0]]) # D_fake, D_real
+        return torch.split(D_out, [G_z.shape[0], x.shape[0]]), torch.split(D_adc, [G_z.shape[0], x.shape[0]]), torch.split(D_ac, [G_z.shape[0], x.shape[0]]), torch.split(D_mi, [G_z.shape[0], x.shape[0]]), torch.split(D_am, [G_z.shape[0], x.shape[0]]) # D_fake, D_real
       else:
         if return_G_z:
-          return D_out, D_adc, D_ac, D_mi, G_z
+          return D_out, G_z
         else:
-          return D_out, D_adc, D_ac, D_mi
+          return D_out, D_adc, D_ac, D_mi, D_am

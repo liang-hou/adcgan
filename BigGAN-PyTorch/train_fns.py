@@ -37,7 +37,7 @@ def GAN_training_function(G, D, GD, z_, y_, ema, state_dict, config):
       for accumulation_index in range(config['num_D_accumulations']):
         z_.sample_()
         y_.sample_()
-        (D_fake, D_real), (D_adc_fake, D_adc_real), (D_ac_fake, D_ac_real), (D_mi_fake, D_mi_real) = GD(z_[:config['batch_size']], y_[:config['batch_size']], 
+        (D_fake, D_real), (D_adc_fake, D_adc_real), (D_ac_fake, D_ac_real), (D_mi_fake, D_mi_real), (D_am_fake, D_am_real) = GD(z_[:config['batch_size']], y_[:config['batch_size']],
                             x[counter], y[counter], train_G=False, 
                             split_D=config['split_D'])
          
@@ -51,9 +51,13 @@ def GAN_training_function(G, D, GD, z_, y_, ema, state_dict, config):
           D_ac_loss = losses.classifier_loss_dis(D_ac_real, y[counter], config['hinge'])
           D_aux_loss = D_ac_loss
         elif config['loss'] == 'tacgan':
-          D_ac_loss = losses.classifier_loss_dis(D_ac_real, y[counter], config['hinge']) 
+          D_ac_loss = losses.classifier_loss_dis(D_ac_real, y[counter], config['hinge'])
           D_mi_loss = losses.classifier_loss_dis(D_mi_fake, y_[:config['batch_size']], config['hinge'])
           D_aux_loss = D_ac_loss + D_mi_loss
+        elif config['loss'] == 'amgan':
+          D_loss = D_loss.detach()
+          D_aux_loss = losses.classifier_loss_dis(D_am_real, y[counter], config['hinge']) + \
+                       losses.classifier_loss_dis(D_am_fake, torch.ones_like(y_[:config['batch_size']]) * utils.nclass_dict[config['dataset']], config['hinge'])
         elif config['loss'] == 'adcgan':
           D_adc_loss_real = losses.classifier_loss_dis(D_adc_real, y[counter] * 2, config['hinge'])
           D_adc_loss_fake = losses.classifier_loss_dis(D_adc_fake, y_[:config['batch_size']] * 2 + 1, config['hinge'])
@@ -83,7 +87,7 @@ def GAN_training_function(G, D, GD, z_, y_, ema, state_dict, config):
     for accumulation_index in range(config['num_G_accumulations']):    
       z_.sample_()
       y_.sample_()
-      D_fake, D_adc_fake, D_ac_fake, D_mi_fake = GD(z_, y_, train_G=True, split_D=config['split_D'])
+      D_fake, D_adc_fake, D_ac_fake, D_mi_fake, D_am_fake = GD(z_, y_, train_G=True, split_D=config['split_D'])
       G_loss = losses.generator_loss(D_fake) / float(config['num_G_accumulations'])
 
       G_aux_loss = torch.tensor(0., device=G_loss.device)
@@ -91,9 +95,12 @@ def GAN_training_function(G, D, GD, z_, y_, ema, state_dict, config):
         G_ac_loss = losses.classifier_loss_gen(D_ac_fake, y_, config['hinge'])
         G_aux_loss = G_ac_loss
       elif config['loss'] == 'tacgan':
-        G_ac_loss = losses.classifier_loss_gen(D_ac_fake, y_, config['hinge']) 
+        G_ac_loss = losses.classifier_loss_gen(D_ac_fake, y_, config['hinge'])
         G_mi_loss = losses.classifier_loss_gen(D_mi_fake, y_, config['hinge'])
         G_aux_loss = G_ac_loss - G_mi_loss
+      elif config['loss'] == 'amgan':
+        G_loss = G_loss.detach()
+        G_aux_loss = losses.classifier_loss_gen(D_am_fake, y_, config['hinge'])
       elif config['loss'] == 'adcgan':
         G_adc_loss_pos = losses.classifier_loss_gen(D_adc_fake, y_ * 2, config['hinge'])
         G_adc_loss_neg = losses.classifier_loss_gen(D_adc_fake, y_ * 2 + 1, config['hinge'])
