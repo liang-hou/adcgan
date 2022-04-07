@@ -178,6 +178,7 @@ def save_and_sample(G, D, G_ema, z_, y_, fixed_z, fixed_y,
                      experiment_name=experiment_name,
                      folder_number=state_dict['itr'],
                      z_=z_)
+  return
   # Also save interp sheets
   for fix_z, fix_y in zip([False, False, True], [False, True, False]):
     utils.interp_sheet(which_G,

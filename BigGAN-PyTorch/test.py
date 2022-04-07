@@ -85,8 +85,11 @@ def testD(config):
   train_data = np.vstack(train_data)
   train_label = np.hstack(train_label)
 
-  config['dataset'] = 'TI200_valid'
-  loaders = utils.get_data_loaders(**{**config, 'batch_size': 100, 'start_itr': 0})
+  if config['dataset'] == 'TI200':
+    config['dataset'] = 'TI200_valid'
+    loaders = utils.get_data_loaders(**{**config, 'batch_size': 100, 'start_itr': 0})
+  else:
+    loaders = utils.get_data_loaders(**{**config, 'batch_size': 100, 'start_itr': 0, 'train': False})
 
   test_data = []
   test_label = []
@@ -215,8 +218,8 @@ def main():
   # parser = utils.add_sample_parser(parser)
   config = vars(parser.parse_args())
   print(config)
-#   testD(config)
-  testG_iFID(config)
+  testD(config)
+#   testG_iFID(config)
   
 if __name__ == '__main__':    
   main()

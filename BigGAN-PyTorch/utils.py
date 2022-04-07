@@ -421,7 +421,7 @@ dset_dict = {'I32': dset.ImageFolder, 'I64': dset.ImageFolder,
              'I32_hdf5': dset.ILSVRC_HDF5, 'I64_hdf5': dset.ILSVRC_HDF5, 
              'I128_hdf5': dset.ILSVRC_HDF5, 'I256_hdf5': dset.ILSVRC_HDF5,
              'C10': dset.CIFAR10, 'C100': dset.CIFAR100,
-             'TI200': dset.ImageFolder, 'TI200_valid': dset.ImageFolder, 
+             'TI200': dset.ImageFolder, 'TI200_valid': dset.ImageFolder,
              'D120': dset.ImageFolder, 'D120_hdf5': dset.ILSVRC_HDF5}
 imsize_dict = {'I32': 32, 'I32_hdf5': 32,
                'I64': 64, 'I64_hdf5': 64,
@@ -562,7 +562,7 @@ def get_data_loaders(dataset, data_root=None, augment=False, batch_size=64,
   image_size = imsize_dict[dataset]
   # For image folder datasets, name of the file where we store the precomputed
   # image locations to avoid having to walk the dirs every time we load.
-  dataset_kwargs = {'index_filename': '%s_imgs.npz' % dataset}
+  dataset_kwargs = {'index_filename': '%s_imgs.npz' % dataset, 'train': kwargs.get('train', True)}
   
   # HDF5 datasets have their own inbuilt transform, no need to train_transform  
   if 'hdf5' in dataset:
@@ -1090,7 +1090,7 @@ class Distribution(torch.Tensor):
       self.mean, self.var = kwargs['mean'], kwargs['var']
     elif self.dist_type == 'categorical':
       self.num_categories = kwargs['num_categories']
-      self.label = kwargs['label']
+      self.label = kwargs.get('label', None)
 
   def sample_(self):
     if self.dist_type == 'normal':
@@ -1099,7 +1099,7 @@ class Distribution(torch.Tensor):
       if self.label is not None:
         self.random_(self.label, self.label+1)
       else:
-        self.random_(0, self.num_categories)    
+        self.random_(0, self.num_categories)
     # return self.variable
     
   # Silly hack: overwrite the to() method to wrap the new object
