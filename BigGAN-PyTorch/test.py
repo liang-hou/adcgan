@@ -210,7 +210,7 @@ def testG_iFID(config):
     print(FID)
     FIDs.append(FID)
   print(np.mean(FIDs))
-    
+
 
 def main():
   # parse command line and run    
@@ -219,7 +219,7 @@ def main():
   config = vars(parser.parse_args())
   print(config)
   testD(config)
-#   testG_iFID(config)
+  testG_iFID(config)
   
 if __name__ == '__main__':    
   main()

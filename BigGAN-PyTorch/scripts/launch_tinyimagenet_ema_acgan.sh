@@ -13,4 +13,4 @@ python train.py \
 --G_ch 64 --D_ch 64 \
 --ema --use_ema --ema_start 20000 \
 --test_every 1000 --save_every 1000 --num_best_copies 1 --num_save_copies 1 --seed 0 \
---loss amgan --G_lambda 0.2 --D_lambda 0.2 --experiment_name ti200_aug_amgan_n2_b100_e500_a20000_w02
+--loss acgan --G_lambda 0.2 --D_lambda 0.2 --experiment_name ti200_acgan_n2_b100_e500_a20000_w02

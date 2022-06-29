@@ -120,7 +120,7 @@ def main():
   config = vars(parser.parse_args())
   print(config)
   run(config)
-  # run_intra(config)
+  run_intra(config)
 
 
 if __name__ == '__main__':    

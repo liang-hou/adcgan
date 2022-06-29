@@ -9,4 +9,4 @@ python train.py \
 --G_init N02 --D_init N02 \
 --ema --use_ema --ema_start 1000 \
 --test_every 2000 --save_every 2000 --num_best_copies 1 --num_save_copies 0 --seed 0 \
---loss amgan --G_lambda 1.0 --D_lambda 1.0 --experiment_name c10_amgan_n4_b50_e1000_a1000_w1
+--loss amgan --G_lambda 0.2 --D_lambda 0.2 --experiment_name c10_amgan_n4_b50_e1000_a1000_w02
