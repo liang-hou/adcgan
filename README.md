@@ -13,7 +13,7 @@ If you find our work useful, please consider citing our paper:
 ```
 @article{hou2021conditional,
   title={Conditional GANs with Auxiliary Discriminative Classifier},
-  author={Hou, Liang and Cao, Qi and Shen, Huawei and Cheng, Xueqi},
+  author={Hou, Liang and Cao, Qi and Shen, Huawei and Pan, Siyuan and Li, Xiaoshuang and Cheng, Xueqi},
   journal={arXiv preprint arXiv:2107.10060},
   year={2021}
 }
