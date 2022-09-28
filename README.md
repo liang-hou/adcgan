@@ -1,7 +1,4 @@
 # Conditional GANs with Auxiliary Discriminative Classifier
-
-> **Conditional GANs with Auxiliary Discriminative Classifier**
->
 > Liang Hou, Qi Cao, Huawei Shen, Siyuan Pan, Xiaoshuang Li, Xueqi Cheng
 >
 > International Conference on Machine Learning (ICML), 2022
@@ -11,9 +8,9 @@ This is a PyTorch implementation of [Conditional GANs with Auxiliary Discriminat
 
 $$
 \begin{align}
-\max_{D,C_\mathrm{d}}V(G,D)+\lambda\cdot\left(\mathbb{E}_{x,y\sim P_{X,Y}}[\log C_\mathrm{d}(y^+|x)]+\mathbb{E}_{x,y\sim Q_{X,Y}}[\log C_\mathrm{d}(y^-|x)]\right)
+\max_{D,C_\mathrm{d}}V(G,D)+\lambda\cdot\left(\mathbb{E}\_{x,y\sim p(x,y)}[\log C_\mathrm{d}(y^+|x)]+\mathbb{E}\_{x,y\sim q(x,y)}[\log C_\mathrm{d}(y^-|x)]\right)
 \\
-\min_{G}V(G,D)-\lambda\cdot\left(\mathbb{E}_{x,y\sim Q_{X,Y}}[\log C_\mathrm{d}(y^+|x)]-\mathbb{E}_{x,y\sim Q_{X,Y}}[\log C_\mathrm{d}(y^-|x)]\right) \\
+\min_{G}V(G,D)-\lambda\cdot\left(\mathbb{E}\_{x,y\sim q(x,y)}[\log C_\mathrm{d}(y^+|x)]-\mathbb{E}\_{x,y\sim q(x,y)}[\log C_\mathrm{d}(y^-|x)]\right) \\
 \end{align}
 $$
 
