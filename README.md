@@ -5,14 +5,17 @@
 
 This is a PyTorch implementation of [Conditional GANs with Auxiliary Discriminative Classifier](https://arxiv.org/abs/2107.10060) (ADC-GAN) based on the [BigGAN-PyTorch](https://github.com/ajbrock/BigGAN-PyTorch) repository. We note that the [PyTorch-StudioGAN](https://github.com/POSTECH-CVLab/PyTorch-StudioGAN) repository also provides an implementation of our ADC-GAN, which facilitates fair comparisons of state-of-the-art GANs. The experiments in the paper are conducted using the two repositories.
 
+![cGANs](resources/cGANs.PNG)
 
 $$
 \begin{align}
-\max_{D,C_\mathrm{d}}V(G,D)+\lambda\cdot\left(\mathbb{E}\_{x,y\sim p(x,y)}[\log C_\mathrm{d}(y^+|x)]+\mathbb{E}\_{x,y\sim q(x,y)}[\log C_\mathrm{d}(y^-|x)]\right)
+\max_{D,C_\mathrm{d}}V(G,D)+\lambda\cdot\left(\mathbb{E}\_{x,y\sim p}[\log C_\mathrm{d}(y^+|x)]+\mathbb{E}\_{x,y\sim q}[\log C_\mathrm{d}(y^-|x)]\right)
 \\
-\min_{G}V(G,D)-\lambda\cdot\left(\mathbb{E}\_{x,y\sim q(x,y)}[\log C_\mathrm{d}(y^+|x)]-\mathbb{E}\_{x,y\sim q(x,y)}[\log C_\mathrm{d}(y^-|x)]\right) \\
+\min_{G}V(G,D)-\lambda\cdot\left(\mathbb{E}\_{x,y\sim q}[\log C_\mathrm{d}(y^+|x)]-\mathbb{E}\_{x,y\sim q}[\log C_\mathrm{d}(y^-|x)]\right) \\
 \end{align}
 $$
+
+![obj](resources/obj.PNG)
 
 
 If you find our work useful, please consider citing our paper:
