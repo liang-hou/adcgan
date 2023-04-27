@@ -1,0 +1,3 @@
+[submodule "PyTorch-StudioGAN"]
+	path = PyTorch-StudioGAN
+	url = https://github.com/POSTECH-CVLab/PyTorch-StudioGAN.git
